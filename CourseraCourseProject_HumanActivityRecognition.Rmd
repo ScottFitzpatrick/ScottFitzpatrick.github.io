@@ -1,0 +1,77 @@
+---
+title: "Coursera Course Project: Human Activity Recognition"
+author: "ScottFitzpatrick"
+date: "November 9, 2016"
+output: html_document
+---
+
+
+# Introduction
+The intention of this exercise is to perform qualitative activity recognition using data from this source: http://groupware.les.inf.puc-rio.br/har. 6 participants perfomed 10 repetitions of a weight lifting exercise in 5 different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E). 4 wearable sensors were mounted on the belt, arm, dumbell, and forearm. The goal is to use machine learning to convert data from the sensors into a Class prediction.
+
+
+# Load and clean data
+
+We first load the data.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+# download file
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", "pml-dataset.csv")
+# load file
+dataset <- read.csv("pml-dataset.csv", na.strings = c("NA", "#DIV/0!"), stringsAsFactors = FALSE)
+```
+
+Next we clean the data.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+# remove columns that will not be used for prediction
+dataset <- subset(dataset, select = -c(X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window))
+# remove columns containing NA values
+dataset <- dataset[, colSums(is.na(dataset)) == 0]
+```
+
+We are left the variables show below.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+colnames(dataset)
+```
+
+
+# Build model
+
+For building the model, we first split the data into training and testing sets.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+library(caret)
+inTrain <- createDataPartition(y = dataset$classe, p = 0.70, list = FALSE)
+training <- dataset[inTrain, ]
+testing <- dataset[-inTrain, ]
+```
+
+Next, we build a model on the training set with 10-fold cross validation random forest method using all 52 available variables to predict classe.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+set.seed(1234)
+modelFit <- train(classe ~ ., data = training, method = "rf", trControl = trainControl(method = "cv", number = 10))
+modelFit$finalModel
+```
+
+The model has an estimated error rate less than 1%.
+
+
+# Apply model
+
+Now we use the model generated with the training set and apply it to the testing set.
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+set.seed(1234)
+predictions <- predict(modelFit, newdata = testing)
+confusionMatrix(predictions, testing$classe)
+```
+
+When applied to the testing set, the model predicted with over 99% accuracy.
+
+
+# Conclusion
+
+The model had an estimated error rate below 1% and when applied to the testing set indeed had over 99% accuracy. We could reasonably expect the out of sample error to be less than 1%. We used cross-validation both for model creation (i.e. 10-fold cross validation) and for model  when applying the training model to the testing set. If an error rate of less than 1% is acceptable, then we would recommend moving forward with this model and applying it to the validation (quiz) set.
