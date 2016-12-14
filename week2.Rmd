@@ -1,0 +1,15 @@
+---
+title: "Week2"
+author: "ScottFitzpatrick"
+date: "December 14, 2016"
+output: html_document
+---
+
+
+```{r, echo=TRUE}
+library(leaflet)
+mymap <- leaflet() %>% 
+    addTiles() %>% 
+    addMarkers(lat = 37.7905, lng = -122.4024, popup = "SF Financial District")
+mymap
+```
