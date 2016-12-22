@@ -1,0 +1,15 @@
+---
+title: "Week 3"
+author: "ScottFitzpatrick"
+date: "December 22, 2016"
+output: ioslides_presentation
+---
+
+## simple plot using mtcars data
+
+```{r, echo=FALSE, message=FALSE}
+library(plotly)
+plot_ly(mtcars, x = wt, y = mpg, mode = "markers", color = as.factor(cyl), size = hp)
+```
+
+## the end
